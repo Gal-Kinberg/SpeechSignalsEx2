@@ -6,7 +6,6 @@ def CTCLoss(network_output_path, input_labels, alphabet):
     y_probability_matrix = np.load(network_output_path)
     T, K = y_probability_matrix.shape  # extract shape from matrix
 
-
     # construct alphabet dictionary
     alphabet += "-"  # add empty character
     alphabet_dict = {alphabet[i]: i for i in range(len(alphabet))}
@@ -23,18 +22,19 @@ def CTCLoss(network_output_path, input_labels, alphabet):
     alpha[0, 1] = y_probability_matrix[0, alphabet_dict[z[1]]]
 
     # use dynamic programing to calculate alpha
-    for t in range(0, T):
-        for s in range(2, L):
-            if z[s] == '-' or z[s] == z[s-2]:
-                additive_term = alpha[t-1, s-1] + alpha[t-1, s]
-            else:
-                additive_term = alpha[t-1, s-1] + alpha[t-1, s] + alpha[t-1, s-2]
+    for t in range(1, T):
+        for s in range(L):
+            additive_term = alpha[t-1, s]
+            if s > 0:
+                additive_term += alpha[t-1, s-1]
+            if (s > 1) and (z[s] != '-') and (z[s] != z[s-2]):
+                additive_term += alpha[t-1, s-2]
             alpha[t, s] = additive_term * y_probability_matrix[t, alphabet_dict[z[s]]]
 
-    return np.round(alpha[-1, -1], 2)
+    return np.round(alpha[-1, -2] + alpha[-1, -1], 2)
 
-    # write results
+    # write results to file
 
 
 if __name__ == "__main__":
-    CTCLoss("mat1.npy", "a", "ab")
+    print(CTCLoss("mat1.npy", "a", "ab"))
