@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def CTCLoss(network_output_path, input_labels, alphabet):
+def CTCLoss(network_output_path: str, input_labels: str, alphabet: str) -> float:
     # read the output matrix y
     y_probability_matrix = np.load(network_output_path)
     T, K = y_probability_matrix.shape  # extract shape from matrix
